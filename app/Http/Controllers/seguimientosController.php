@@ -13,9 +13,17 @@ class seguimientosController extends Controller
      */
     public function get_seguimientos()
     {
-        $seguimientos= seguimiento::all();
-        //$seguimientos= "hola ";
-        return response()->json($seguimientos);
+        try {
+            $seguimientos= seguimiento::all();
+            return response()->json($seguimientos);
+        } catch (\Throwable $th) {
+            $response = [
+                'type' => "error",
+                'content' => "Ocurrió un error al consultar los seguimentos"
+            ];
+            return $response;
+        }
+        
     }
 
     /**
@@ -23,17 +31,27 @@ class seguimientosController extends Controller
      */
     public function create(Request $request)
     {
-        $seguimiento = new seguimiento;
-        $seguimiento->Nombres= $request->nombres;
-        $seguimiento->Apellidos= $request->apellidos;
-        $seguimiento->Asunto= $request->asunto;
-        $seguimiento->correo= $request->correo;
-        $seguimiento->Telefono= $request->telefono;
-        $seguimiento->fecha= $request->fecha;
-        $seguimiento->dias= $request->dias;
-        $seguimiento->proximo_seguimiento= $request->proximo_seguimento;
-        $seguimiento->save();
-        return back()->with('succes','seguimiento creado');
+        try {
+            $seguimiento = new seguimiento;
+            $seguimiento->Nombres= $request->nombres;
+            $seguimiento->Apellidos= $request->apellidos;
+            $seguimiento->Asunto= $request->asunto;
+            $seguimiento->correo= $request->correo;
+            $seguimiento->Telefono= $request->telefono;
+            $seguimiento->fecha= $request->fecha;
+            $seguimiento->dias= $request->dias;
+            $seguimiento->proximo_seguimiento= $request->proximo_seguimento;
+            $seguimiento->save();
+            return $this->responseApi(true, ['type' => 'success', 'content' => 'seguimiento creado']);
+
+        } catch (Throwable $throwableException) {
+            $response = [
+                'type' => "error",
+                'content' => "Ocurrió un error al crear el seguimiento."
+            ];
+            return $response;
+        }
+        
     }
 
     /**
@@ -41,8 +59,24 @@ class seguimientosController extends Controller
      */
     public function get_seguimiento_id(string $id)
     {   
-        $seguimiento_by_id= seguimiento::find($id);
-        return response()->json($seguimiento_by_id);
+        if(isset($id)){
+            try {
+                $seguimiento_by_id= seguimiento::find($id);
+                return response()->json($seguimiento_by_id);
+            } catch (Throwable $throwableException) {
+                $response = [
+                    'type' => "error",
+                    'content' => "Ocurrió un error al consultar el seguimiento."
+                ];
+                return $response;
+            }
+        }else{
+            $response = [
+                'type' => "error",
+                'content' => "el seguimiento consultado no existe."
+            ];
+            return $response;
+        }
     }
 
       /**
@@ -50,41 +84,60 @@ class seguimientosController extends Controller
      */
     public function update(Request $request)
     {
-        dd($request);
-        
-        $seguimiento = seguimiento::find($id);
-        $seguimiento->Nombres= $request->nombres;
-        $seguimiento->Apellidos= $request->apellidos;
-        $seguimiento->Asunto= $request->asunto;
-        $seguimiento->correo= $request->correo;
-        $seguimiento->Telefono= $request->telefono;
-        $seguimiento->fecha= $request->fecha;
-        $seguimiento->dias= $request->dias;
-        $seguimiento->proximo_seguimiento= $request->proximo_seguimento;
-        $seguimiento->save();
-        return back()->with('notice', 'El usuario ha sido modificado correctamente.');
-        
+         try {
+            $seguimientoNew = seguimiento::find($request->id);
+            if(isset($seguimientoNew)){
+                $seguimientoNew->Nombres= $request->Nombres;
+                $seguimientoNew->Apellidos= $request->Apellidos;
+                $seguimientoNew->Asunto= $request->Asunto;
+                $seguimientoNew->correo= $request->correo;
+                $seguimientoNew->Telefono= $request->Telefono;
+                $seguimientoNew->fecha= $request->fecha;
+                $seguimientoNew->dias= $request->dias;
+                $seguimientoNew->proximo_seguimiento= $request->fecha;
+                $seguimientoNew->save();
+                return response()->json($seguimientoNew);
+            }else{
+                $response = [
+                    'type' => "error",
+                    'content' => "el seguimiento consultado no existe."
+                ];
+                return $response;
+            }
+        } catch (Throwable $throwableException) {
+            $response = [
+                'type' => "error",
+                'content' => "Ocurrió un error al actualizar el seguimiento."
+            ];
+            return $response;
+        }
     }
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
     {
-        try {
-            $response = [
-                'type' => "success",
-                'content' => "Se el seguimiento de manera correcta."
-            ];
-
-            $seguimiento = seguimiento::findOrFail($id);
-            $seguimiento->delete();
-            return $this->responseApi( $response);
-
-        } catch (Throwable $throwableException) {
+        if(isset($id)){
+            try {
+                $seguimiento = seguimiento::findOrFail($id);
+                $seguimiento->delete();
+                $response = [
+                    'type' => "success",
+                    'content' => "Se el seguimiento se elmino de manera correcta."
+                ];
+                return $this->responseApi( $response);
+            } catch (Throwable $throwableException) {
+                $response = [
+                    'type' => "error",
+                    'content' => "Ocurrió un error al eliminar el seguimiento."
+                ];
+            }
+        }else{
             $response = [
                 'type' => "error",
-                'content' => "Ocurrió un error al eliminar el seguimiento."
+                'content' => "el seguimiento que intenta eliminar no existe."
             ];
+            return $response;
         }
         
     }
