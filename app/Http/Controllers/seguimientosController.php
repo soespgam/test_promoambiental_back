@@ -42,7 +42,7 @@ class seguimientosController extends Controller
             $seguimiento->dias= $request->dias;
             $seguimiento->proximo_seguimiento= $request->proximo_seguimento;
             $seguimiento->save();
-            return $this->responseApi(true, ['type' => 'success', 'content' => 'seguimiento creado']);
+            return response()->json('seguimiento creado');
 
         } catch (Throwable $throwableException) {
             $response = [
@@ -94,7 +94,7 @@ class seguimientosController extends Controller
                 $seguimientoNew->Telefono= $request->Telefono;
                 $seguimientoNew->fecha= $request->fecha;
                 $seguimientoNew->dias= $request->dias;
-                $seguimientoNew->proximo_seguimiento= $request->fecha;
+                $seguimientoNew->proximo_seguimiento= $request->fecha_proximo_seguimiento;
                 $seguimientoNew->save();
                 return response()->json($seguimientoNew);
             }else{
@@ -121,11 +121,7 @@ class seguimientosController extends Controller
             try {
                 $seguimiento = seguimiento::findOrFail($id);
                 $seguimiento->delete();
-                $response = [
-                    'type' => "success",
-                    'content' => "Se el seguimiento se elmino de manera correcta."
-                ];
-                return $this->responseApi( $response);
+                return response()->json('seguimiento eliminado');
             } catch (Throwable $throwableException) {
                 $response = [
                     'type' => "error",
